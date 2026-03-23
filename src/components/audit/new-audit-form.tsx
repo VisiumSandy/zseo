@@ -25,7 +25,9 @@ export function NewAuditForm() {
     e.preventDefault()
     setError('')
     if (!url) { setError('Veuillez entrer une URL'); return }
-    let finalUrl = url
+    let finalUrl = url.trim()
+// Nettoyer les doubles préfixes
+    finalUrl = finalUrl.replace(/^(https?:\/\/)+/, 'https://')
     if (!finalUrl.startsWith('http')) finalUrl = 'https://' + finalUrl
     setLoading(true)
     try {
