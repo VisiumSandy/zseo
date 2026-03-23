@@ -7,7 +7,12 @@ if (!g.mongoose) g.mongoose = { conn: null, promise: null }
 export async function connectDB() {
   if (g.mongoose.conn) return g.mongoose.conn
   if (!g.mongoose.promise) {
-    g.mongoose.promise = mongoose.connect(MONGODB_URI, { dbName: 'zSeo', bufferCommands: false })
+    g.mongoose.promise = mongoose.connect(MONGODB_URI, { 
+      dbName: 'zSeo', 
+      bufferCommands: false,
+      tls: true,
+      tlsAllowInvalidCertificates: true,
+  })
   }
   g.mongoose.conn = await g.mongoose.promise
   return g.mongoose.conn
