@@ -151,3 +151,75 @@ export interface AuditResult {
   createdAt: string
   completedAt: string | null
 }
+
+// ─── NOUVELLES ANALYSES v3 ────────────────────────────────────────────────────
+
+export interface UrlAnalysis {
+  url: string
+  length: number
+  hasKeyword: boolean
+  usesHyphens: boolean
+  depth: number // number of slashes
+  hasUpperCase: boolean
+  hasUnderscores: boolean
+  hasNumbers: boolean
+  isClean: boolean
+}
+
+export interface ImagePerformance {
+  totalImages: number
+  totalSizeKB: number
+  webpCount: number
+  lazyLoadCount: number
+  oversizedCount: number // > 200KB
+  withoutAlt: number
+  recommendations: string[]
+}
+
+export interface TechStack {
+  cms: string | null        // WordPress, Shopify, Wix...
+  framework: string | null  // Next.js, React, Vue...
+  analytics: string[]       // GA4, GTM, Hotjar...
+  chatbot: string | null
+  ecommerce: string | null
+  cdn: string | null
+  detected: string[]
+}
+
+export interface EEATScore {
+  score: number             // 0-100
+  hasAboutPage: boolean
+  hasContactPage: boolean
+  hasPrivacyPolicy: boolean
+  hasTerms: boolean
+  hasAuthor: boolean
+  hasDatePublished: boolean
+  hasSocialLinks: boolean
+  hasSchema: boolean
+  hasReviews: boolean
+  details: string[]
+  missing: string[]
+}
+
+export interface KeywordAnalysis {
+  keyword: string
+  inTitle: boolean
+  inH1: boolean
+  inMetaDescription: boolean
+  inUrl: boolean
+  inFirstParagraph: boolean
+  density: number
+  occurrences: number
+  recommendations: string[]
+}
+
+export interface CrawlPageResult {
+  url: string
+  title: string | null
+  statusCode: number
+  wordCount: number
+  hasH1: boolean
+  metaDescription: string | null
+  loadTime: number
+  issues: string[]
+}
