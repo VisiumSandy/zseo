@@ -59,11 +59,14 @@ async function runAudit(auditId: string, url: string, userId: string, opts: Audi
       : {}
 
     // Analyses avancées + GSC + concurrent en parallèle
+    // Sur Vercel, limiter drastiquement pour rester sous 60s
+    const isVercel = !!process.env.VERCEL
+      
     const [gscData, competitorData, eeatScore, crawlResults] = await Promise.all([
       opts.gscSiteUrl ? fetchGSCData(userId, opts.gscSiteUrl).catch(() => null) : Promise.resolve(null),
-      opts.competitorUrl ? analyzeCompetitor(opts.competitorUrl).catch(() => null) : Promise.resolve(null),
+      (!isVercel && opts.competitorUrl) ? analyzeCompetitor(opts.competitorUrl).catch(() => null) : Promise.resolve(null),
       html ? analyzeEEAT(url, html).catch(() => null) : Promise.resolve(null),
-      opts.crawlDepth > 1 ? crawlPages(url, Math.min(opts.crawlDepth, 3)).catch(() => []) : Promise.resolve([]),
+      (!isVercel && opts.crawlDepth > 1) ? crawlPages(url, Math.min(opts.crawlDepth, 3)).catch(() => []) : Promise.resolve([]),
     ])
 
     const urlAnalysis = analyzeUrl(url, opts.targetKeyword)
