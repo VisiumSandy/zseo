@@ -316,10 +316,14 @@ export function calculateScores(technical: TechnicalAudit, onPage: OnPageAudit, 
 
   const perf = Math.round((technical.performanceScore + technical.mobileScore) / 2)
   const gsc = gscAvailable ? 75 : 50
-  const total = Math.min(100, Math.round(tech * 0.3 + page * 0.3 + perf * 0.3 + gsc * 0.1))
+  const isDefaultPerf = technical.performanceScore === 50 && technical.mobileScore === 50
+  const total = isDefaultPerf
+    ? Math.min(100, Math.round(tech * 0.45 + page * 0.45 + gsc * 0.1))
+    : Math.min(100, Math.round(tech * 0.3 + page * 0.3 + perf * 0.3 + gsc * 0.1))
 
   return { technical: tech, onPage: page, performance: perf, gsc, total }
 }
+
 
 // ─── CHECKLIST ────────────────────────────────────────────────────────────────
 
