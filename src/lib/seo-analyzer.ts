@@ -259,11 +259,15 @@ async function fetchPageSpeed(url: string) {
   const base = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
   const def = { loadTime: 0, performanceScore: 50, mobileScore: 50,
     coreWebVitals: { lcp: 0, fid: 0, cls: 0, fcp: 0, ttfb: 0 } }
+
+  // Désactivé sur Vercel plan gratuit — trop long (30s x2)
+  if (process.env.VERCEL) return def
   if (!apiKey) return def
+
   try {
     const [dr, mr] = await Promise.all([
-      axios.get(`${base}?url=${encodeURIComponent(url)}&strategy=desktop&key=${apiKey}`, { timeout: 30000 }),
-      axios.get(`${base}?url=${encodeURIComponent(url)}&strategy=mobile&key=${apiKey}`, { timeout: 30000 }),
+      axios.get(`${base}?url=${encodeURIComponent(url)}&strategy=desktop&key=${apiKey}`, { timeout: 15000 }),
+      axios.get(`${base}?url=${encodeURIComponent(url)}&strategy=mobile&key=${apiKey}`, { timeout: 15000 }),
     ])
     const a = dr.data?.lighthouseResult?.audits || {}
     const c = dr.data?.lighthouseResult?.categories || {}

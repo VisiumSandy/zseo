@@ -44,28 +44,26 @@ async function runAudit(auditId: string, url: string, userId: string, opts: Audi
     const { analyzeUrl, analyzeImagePerformance, detectTechStack, analyzeEEAT, analyzeKeyword, crawlPages } =
       await import('@/lib/advanced-analyzer')
 
-    // Core analysis
-    const [technical, onPage] = await Promise.all([
+    // TOUT en parallèle pour gagner du temps
+    const axiosLib = (await import('axios')).default
+
+    const [technical, onPage, htmlResponse] = await Promise.all([
       analyzeTechnical(url),
       analyzeOnPage(url),
+      axiosLib.get(url, { timeout: 8000, headers: { 'User-Agent': 'Mozilla/5.0' } }).catch(() => null),
     ])
 
-    // Fetch HTML for advanced analysis
-    let html = ''
-    let responseHeaders: Record<string, string> = {}
-    try {
-      const axios = (await import('axios')).default
-      const r = await axios.get(url, { timeout: 10000, headers: { 'User-Agent': 'Mozilla/5.0' } })
-      html = r.data
-      responseHeaders = Object.fromEntries(Object.entries(r.headers).map(([k, v]) => [k, String(v)]))
-    } catch {}
+    const html = htmlResponse?.data || ''
+    const responseHeaders = htmlResponse
+      ? Object.fromEntries(Object.entries(htmlResponse.headers).map(([k, v]) => [k, String(v)]))
+      : {}
 
-    // Advanced analyses (parallel)
+    // Analyses avancées + GSC + concurrent en parallèle
     const [gscData, competitorData, eeatScore, crawlResults] = await Promise.all([
-      opts.gscSiteUrl ? fetchGSCData(userId, opts.gscSiteUrl) : Promise.resolve(null),
-      opts.competitorUrl ? analyzeCompetitor(opts.competitorUrl) : Promise.resolve(null),
-      html ? analyzeEEAT(url, html) : Promise.resolve(null),
-      opts.crawlDepth > 1 ? crawlPages(url, opts.crawlDepth) : Promise.resolve([]),
+      opts.gscSiteUrl ? fetchGSCData(userId, opts.gscSiteUrl).catch(() => null) : Promise.resolve(null),
+      opts.competitorUrl ? analyzeCompetitor(opts.competitorUrl).catch(() => null) : Promise.resolve(null),
+      html ? analyzeEEAT(url, html).catch(() => null) : Promise.resolve(null),
+      opts.crawlDepth > 1 ? crawlPages(url, Math.min(opts.crawlDepth, 3)).catch(() => []) : Promise.resolve([]),
     ])
 
     const urlAnalysis = analyzeUrl(url, opts.targetKeyword)
